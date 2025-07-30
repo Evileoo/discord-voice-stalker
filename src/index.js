@@ -6,7 +6,8 @@ import { deploy } from './deploy-commands.js';
 // Create client instance
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates
     ]
 });
 

@@ -4,6 +4,9 @@ project:
             [ ] temps passé dans chaque channel
             [ ] temps passé en mute / deafen
             [ ] temps passé avec telle personne
+            [ ] déplacements courants entre les channels (AFK :KEKW:)
+            [ ] temps passé à stream
+            [ ] temps passé avec la cam
         server:
             [ ] temps passé dans chaque vocal
             [ ] temps passé dans tous les vocaux
