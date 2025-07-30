@@ -1,6 +1,7 @@
 // JS imports
 import { Client, GatewayIntentBits, Collection } from 'discord.js';
 import fs from 'fs';
+import { deploy } from './deploy-commands.js';
 
 // Create client instance
 const client = new Client({
@@ -79,6 +80,8 @@ for(let event of events){
         });
     }
 }
+
+deploy.refresh();
 
 
 // Handle possible errors to prevent the bot to shut down when an error occurs
