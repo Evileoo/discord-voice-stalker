@@ -1,0 +1,22 @@
+{
+  "name": "index",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "author": {
+    "name": "Evileoo"
+  },
+  "scripts": {
+    "i": "node --env-file .env ./src/index.js",
+    "d": "node --env-file .env ./src/deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.18.0",
+    "esm": "^3.2.25",
+    "mysql2-async": "^2.0.1"
+  },
+  "devDependencies": {
+    "globals": "^15.9.0"
+  }
+}

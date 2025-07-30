@@ -1,0 +1,15 @@
+project:
+    new:
+        user:
+            [ ] temps passé dans chaque channel
+            [ ] temps passé en mute / deafen
+            [ ] temps passé avec telle personne
+        server:
+            [ ] temps passé dans chaque vocal
+            [ ] temps passé dans tous les vocaux
+            [ ] temps passé mute / deafen
+            [ ] ranking des personnes les plus présentes en vocal
+    refacto: 
+    delete: 
+    check:
+    cancelled:
