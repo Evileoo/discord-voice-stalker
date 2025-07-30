@@ -12,7 +12,7 @@
     "d": "node --env-file .env ./src/deploy-commands.js"
   },
   "dependencies": {
-    "discord.js": "^14.18.0",
+    "discord.js": "^14.21.0",
     "esm": "^3.2.25",
     "mysql2-async": "^2.0.1"
   },
