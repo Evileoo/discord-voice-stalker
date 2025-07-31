@@ -9,99 +9,107 @@ export const event = {
 
         //console.log(oldVoiceState, newVoiceState);
 
-        // Préparation des variables d'insertion
-        const userId = newVoiceState.id;
-        const username = newVoiceState.guild.members.cache.get(newVoiceState.id).user.username;
-        const channelId = (newVoiceState.channelId != null) ? newVoiceState.channelId : oldVoiceState.channelId;
-        const channelName = (newVoiceState.channelId != null) ? newVoiceState.guild.channels.cache.get(newVoiceState.channelId).name : oldVoiceState.guild.channels.cache.get(oldVoiceState.channelId).name;
-        const joinedTms = (newVoiceState.channelId != null && newVoiceState.channelId != oldVoiceState.channelId);
-        const leftTms = (newVoiceState.channelId == null);
-        const selfMuted = (newVoiceState.selfMute == true && newVoiceState.selfMute != oldVoiceState.selfMute);
-        const serverMuted = (newVoiceState.serverMute == true && newVoiceState.serverMute != oldVoiceState.serverMute);
-        const selfUnmuted = (newVoiceState.selfMute == false && newVoiceState.selfMute != oldVoiceState.selfMute);
-        const serverUnmuted = (newVoiceState.serverMute == false && newVoiceState.serverMute != oldVoiceState.serverMute);
-        const selfDeafen = (newVoiceState.selfDeaf == true && newVoiceState.selfDeaf != oldVoiceState.selfDeaf);
-        const serverDeafen = (newVoiceState.serverDeaf == true && newVoiceState.serverDeaf != oldVoiceState.serverDeaf);
-        const selfUndeafen = (newVoiceState.selfDeaf == false && newVoiceState.selfDeaf != oldVoiceState.selfDeaf);
-        const serverUndeafen = (newVoiceState.serverDeaf == false && newVoiceState.serverDeaf != oldVoiceState.serverDeaf);
-        const streamStarted = (newVoiceState.streaming == true && newVoiceState.streaming != oldVoiceState.streaming);
-        const streamEnded = (newVoiceState.streaming == false && newVoiceState.streaming != oldVoiceState.streaming);
-        const camStarted = (newVoiceState.selfVideo == true && newVoiceState.selfVideo != oldVoiceState.selfVideo);
-        const camEnded = (newVoiceState.selfVideo == false && newVoiceState.selfVideo != oldVoiceState.selfVideo);
+        ///////////////////////////////
+        // traitement des évènements //
+        ///////////////////////////////
 
-        // Insertion de l'event dans la base de données
-        const insertId = await db.insert(`
-            INSERT INTO user_voice_event (
-                user_id,
-                user_name,
-                channel_id,
-                channel_name,
-                joined_tms,
-                left_tms,
-                self_muted_tms,
-                self_unmuted_tms,
-                server_muted_tms,
-                server_unmuted_tms,
-                self_deafen_tms,
-                self_undeafen_tms,
-                server_deafen_tms,
-                server_undeafen_tms,
-                stream_start_tms,
-                stream_end_tms,
-                cam_start_tms,
-                cam_end_tms
-            ) VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null),
-                IF(? = true, CURRENT_TIMESTAMP(), null)
-            );
-        `, [
-            userId,
-            username,
-            channelId,
-            channelName,
-            joinedTms,
-            leftTms,
-            selfMuted,
-            selfUnmuted,
-            serverMuted,
-            serverUnmuted,
-            selfDeafen,
-            selfUndeafen,
-            serverDeafen,
-            serverUndeafen,
-            streamStarted,
-            streamEnded,
-            camStarted,
-            camEnded,
-        ]);
+        if(newVoiceState.channelId == null) {
+            // Cas où on quitte tout vocal
+            // On met fin à tous les events de l'utilisateur en cours
+            await dbDeleteAll();
 
+        } else if(oldVoiceState.channelId == null) {
+            // Dans le cas où on rejoint un channel sans venir d'un autre
+            // Ajout de l'event "Rejoint un salon vocal" dans la bdd
+            await dbInsert("VCL");
 
-        /*
-            Data utile:
-            serverDeaf
-            serverMute
-            selfDeaf
-            selfMute
-            selfVideo
-            streaming
-            channelId
-            afkChannelId
-        */
+            // Traitement de toutes les autres données possibles de l'évènement
+            if(newVoiceState.selfMute == true) await dbInsert("SFM");
+            if(newVoiceState.selfDeaf == true) await dbInsert("SFD");
+            if(newVoiceState.serverMute == true) await dbInsert("SRM");
+            if(newVoiceState.serverDeaf == true) await dbInsert("SRD");
+            if(newVoiceState.streaming == true) await dbInsert("STR");
+            if(newVoiceState.selfVideo == true) await dbInsert("CAM");
+
+        } else if(newVoiceState.channelId != oldVoiceState.channelId) {
+            // On coupe tous les events puisqu'on change de channel...
+            await dbDeleteAll();
+
+            // ...et on les recrée
+            await dbInsert("VCL");
+            if(newVoiceState.selfMute == true) await dbInsert("SFM");
+            if(newVoiceState.selfDeaf == true) await dbInsert("SFD");
+            if(newVoiceState.serverMute == true) await dbInsert("SRM");
+            if(newVoiceState.serverDeaf == true) await dbInsert("SRD");
+            if(newVoiceState.streaming == true) await dbInsert("STR");
+            if(newVoiceState.selfVideo == true) await dbInsert("CAM");
+
+        } else {
+            // Changement statut self mute
+            if(newVoiceState.selfMute == true && oldVoiceState.selfMute == false) await dbInsert("SFM");
+            else if(newVoiceState.selfMute == false && oldVoiceState.selfMute == true) await dbDelete("SFM");
+            // Changement statut self deafen
+            if(newVoiceState.selfDeaf == true && oldVoiceState.selfDeaf == false) await dbInsert("SFD");
+            else if(newVoiceState.selfDeaf == false && oldVoiceState.selfDeaf == true) await dbDelete("SFD");
+            // Changement statut server mute
+            if(newVoiceState.serverMute == true && oldVoiceState.serverMute == false) await dbInsert("SRM");
+            else if(newVoiceState.serverMute == false && oldVoiceState.serverMute == true) await dbDelete("SRM");
+            // Changement statut server deafen
+            if(newVoiceState.serverDeaf == true && oldVoiceState.serverDeaf == false) await dbInsert("SRD");
+            else if(newVoiceState.serverDeaf == false && oldVoiceState.serverDeaf == true) await dbDelete("SRD");
+            // changement statut streaming
+            if(newVoiceState.streaming == true && oldVoiceState.streaming == false) await dbInsert("STR");
+            else if(newVoiceState.streaming == false && oldVoiceState.streaming == true) await dbDelete("STR");
+            // Changement statut caméra
+            if(newVoiceState.selfVideo == true && oldVoiceState.selfVideo == false) await dbInsert("CAM");
+            else if(newVoiceState.selfVideo == false && oldVoiceState.selfVideo == true) await dbDelete("CAM");
+        }
+
+        ///////////////
+        // Fonctions //
+        ///////////////
+
+        async function dbInsert(eventType) {
+            await db.query(`
+                INSERT INTO user_voice_event (user_id, user_name, channel_id, channel_name, event_type_id, event_start_tms)
+                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP())
+            `, [
+                newVoiceState.id,
+                newVoiceState.guild.members.cache.get(newVoiceState.id).user.username,
+                newVoiceState.channelId,
+                newVoiceState.guild.channels.cache.get(newVoiceState.channelId).name,
+                eventType
+            ]);
+        }
+
+        async function dbDelete(eventType) {
+            await db.query(`
+                UPDATE user_voice_event
+                SET event_end_tms = CURRENT_TIMESTAMP()
+                WHERE user_id = ?
+                AND event_type_id = ?
+            `, [
+                newVoiceState.id,
+                eventType
+            ]);
+        }
+
+        async function dbDeleteAll() {
+            await db.query(`
+                UPDATE user_voice_event
+                SET event_end_tms = CURRENT_TIMESTAMP()
+                WHERE event_id IN (
+                    SELECT * FROM (
+                        SELECT e.event_id
+                        FROM user_voice_event e
+                        WHERE user_id = ?
+                        AND event_end_tms IS NULL
+                    ) AS X
+                )
+            `, [
+                newVoiceState.id
+            ]);
+        }
+
     }
 }
