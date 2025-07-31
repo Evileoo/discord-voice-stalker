@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "discord.js": "^14.21.0",
+    "dotenv": "^17.2.1",
     "esm": "^3.2.25",
     "mysql2-async": "^2.0.1"
   },
