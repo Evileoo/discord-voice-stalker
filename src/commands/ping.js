@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 
 export const command = {
     data: new SlashCommandBuilder()
@@ -7,7 +7,7 @@ export const command = {
     , async execute(interaction){
         interaction.reply({
             content: `Pong!`,
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral
         });
     }
 }

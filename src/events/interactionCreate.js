@@ -1,4 +1,4 @@
-import { Events } from 'discord.js';
+import { Events, MessageFlags } from 'discord.js';
 import { globals } from '../globals.js';
 
 export const event = {
@@ -37,6 +37,19 @@ export const event = {
 		} else if (interaction.isStringSelectMenu()) {
 
 			console.log(interaction);
+
+			const selectMenuData = interaction.customId.split(globals.separator);
+
+			const selectMenu = interaction.client.selectMenus.get(selectMenuData[0]);
+
+			if(!selectMenu) console.error(`No select menu matching ${selectMenuData[0]} was found.`);
+
+			try {
+				await selectMenu.execute(interaction, selectMenuData);
+			} catch(error) {
+				console.error(`Error executing ${interaction.customId}`);
+				console.error(error);
+			}
 
 		} else if (interaction.isAutocomplete()) {
 
@@ -102,7 +115,7 @@ export const event = {
 		} else {
 			interaction.reply({
 				content: `I don't know what you did, but this message isn't supposed to be shown`,
-				ephemeral: true
+				flags: MessageFlags.Ephemeral
 			});
 
 			console.error(interaction);
