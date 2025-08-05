@@ -27,7 +27,7 @@ export const selectMenu = {
 
                 switch(type) {
                     case "#":
-                        command.channelId = id[1].substring(1);
+                        if(id[1].substring(1) != command.afkChannelId) command.channelId = id[1].substring(1);
                     break;
                     case "@":
                         if(!command.memberId) {
