@@ -36,9 +36,68 @@ export const stats = {
     },
     async dataTreatment(params, data) {
 
-        if(params.memberCompareId) {
+        if(params.memberId) {
 
-        } else if(params.memberId) {
+            const statsTab = [];
+
+            data.forEach(element => {
+                // Si l'utilisateur est dans le salon AFK, on change le type d'évènement
+                if(element.channel_id == params.afkChannelId) element.event_type_id = "AFK";
+
+                let found = false;
+                for(let i = 0; i < statsTab.length; i++) {
+                    if(statsTab[i].userId == element.user_id) {
+                        found = true;
+                        switch(element.event_type_id) {
+                            case "CAM":
+                                statsTab[i].data.cam += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                            case "SFD":
+                                statsTab[i].data.sfd += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                            case "SFM":
+                                statsTab[i].data.sfm += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                            case "SRD":
+                                statsTab[i].data.srd += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                            case "SRM":
+                                statsTab[i].data.srm += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                            case "STR":
+                                statsTab[i].data.str += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                            case "VCL":
+                                statsTab[i].data.vcl += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                            case "AFK":
+                                statsTab[i].data.afk += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            break;
+                        }
+
+                        break;
+                    }
+                }
+
+                if(!found) {
+                    statsTab.push({
+                        userId: element.user_id,
+                        member: element.user_id == params.memberId,
+                        data: {
+                            cam: (element.event_type_id == "CAM") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
+                            sfd: (element.event_type_id == "SFD") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
+                            sfm: (element.event_type_id == "SFM") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
+                            srd: (element.event_type_id == "SRD") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
+                            srm: (element.event_type_id == "SRM") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
+                            str: (element.event_type_id == "STR") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
+                            vcl: (element.event_type_id == "VCL") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
+                            afk: (element.event_type_id == "AFK") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0
+                        }
+                    })
+                }
+            });
+
+            return statsTab;
             
         } else {
             const userTab = [];
@@ -76,13 +135,86 @@ export const stats = {
 
         // Préparation de la description de l'embed
         let embedDescription = ``;
+        let memberI = 0;
+        let compareI = 1;
 
-        if(params.memberCompareId) {
-            embed.setTitle(`Comparaison des statistiques`);
-            embedDescription += `Intéressés: <@${params.memberId}> et <@${params.memberCompareId}>`;
-        } else if(params.memberId) {
-            embed.setTitle(`Statistiques`);
-            embedDescription += `de <@${params.memberId}>`;
+        if(params.memberId) {
+            if(params.memberCompareId) {
+                embed.setTitle(`Comparaison des statistiques`);
+                embedDescription += `Intéressés: <@${params.memberId}> et <@${params.memberCompareId}>`;
+                if(data[1].member) {
+                    memberI = 1;
+                    compareI = 0;
+                }
+            } else {
+                embed.setTitle(`Statistiques`);
+                embedDescription += `de <@${params.memberId}>`;
+            }
+
+            let statsSentance = `Présence en vocal\nMute\nSourdine\nStream\nAFK\nCaméra allumée`;
+            let memberSentance = ``;
+            let memberCompareSentance = ``;
+            let time;
+
+            if(params.memberCompareId) {
+                time = manageDates.dhms(data[memberI].data.vcl);
+                if(data[memberI].data.vcl > data[compareI].data.vcl) memberSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.srm + data[memberI].data.sfm);
+                if((data[memberI].data.srm + data[memberI].data.sfm) > (data[compareI].data.srm + data[compareI].data.sfm)) memberSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.srd + data[memberI].data.sfd);
+                if((data[memberI].data.srd + data[memberI].data.sfd) > (data[compareI].data.srd + data[compareI].data.sfd)) memberSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.str);
+                if(data[memberI].data.str > data[compareI].data.str) memberSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.afk);
+                if(data[memberI].data.afk > data[compareI].data.afk) memberSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.cam);
+                if(data[memberI].data.cam > data[compareI].data.cam) memberSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+
+                time = manageDates.dhms(data[compareI].data.vcl);
+                if(data[compareI].data.vcl > data[memberI].data.vcl) memberCompareSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberCompareSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[compareI].data.srm + data[compareI].data.sfm);
+                if((data[memberI].data.srm + data[memberI].data.sfm) < (data[compareI].data.srm + data[compareI].data.sfm)) memberCompareSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberCompareSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[compareI].data.srd + data[compareI].data.sfd);
+                if((data[memberI].data.srd + data[memberI].data.sfd) < (data[compareI].data.srd + data[compareI].data.sfd)) memberCompareSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberCompareSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[compareI].data.str);
+                if(data[compareI].data.str > data[memberI].data.str) memberCompareSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberCompareSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[compareI].data.afk);
+                if(data[compareI].data.afk > data[memberI].data.afk) memberCompareSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberCompareSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[compareI].data.cam);
+                if(data[compareI].data.cam > data[memberI].data.cam) memberCompareSentance += `**${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s**\n`;
+                else memberCompareSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+            } else {
+                time = manageDates.dhms(data[memberI].data.vcl);
+                memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.srm + data[memberI].data.sfm);
+                memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.srd + data[memberI].data.sfd);
+                memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.str);
+                memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.afk);
+                memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+                time = manageDates.dhms(data[memberI].data.cam);
+                memberSentance += `${time.days}j ${time.hours}h${time.minutes}m${time.seconds}s\n`;
+            }
+
+
+            embed.addFields({ name: `Statistique`, value: `${statsSentance}`, inline: true },);
+            if(params.memberCompareId) embed.addFields({ name: `intessé 1`, value: `${memberSentance}`, inline: true }, { name: `interessé`, value: `${memberCompareSentance}`, inline: true });
+            else embed.addFields({ name: `Valeur`, value: `${memberSentance}`, inline: true });
+
+
         } else {
             embed.setTitle(`TOP 10`);
 
@@ -181,10 +313,10 @@ export const stats = {
         embed.setDescription(embedDescription);
 
         // envoi du message à générer
-        if(params.memberCompareId) {
-            
-        } else if(params.memberId) {
-            
+        if(params.memberId) {
+            return {
+                embeds: [embed]
+            }
         } else {
             return {
                 embeds: [embed],

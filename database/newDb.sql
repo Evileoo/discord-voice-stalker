@@ -42,7 +42,7 @@ INSERT INTO event_type (event_type_id, event_type_lib) VALUES
 ('SFD', 'Sourdine au niveau utilisateur'),
 ('SRM', 'Muet au niveau serveur'),
 ('SFM', 'Muet au niveau Utilisateur'),
-('VCL', 'Déplacement entre vocaux'),
+('VCL', 'Temps en vocal'),
 ('STR', 'Partage d''écran'),
 ('CAM', 'Caméra allumée');
 
