@@ -7,8 +7,6 @@ export const event = {
     once: false,
     async execute(oldVoiceState, newVoiceState){
 
-        //console.log(oldVoiceState, newVoiceState);
-
         ///////////////////////////////
         // traitement des évènements //
         ///////////////////////////////
@@ -46,22 +44,22 @@ export const event = {
 
         } else {
             // Changement statut self mute
-            if(newVoiceState.selfMute == true && oldVoiceState.selfMute == false) await dbInsert("SFM");
+            if(newVoiceState.selfMute == true && oldVoiceState.selfMute == false && !await checkActiveEvent("SFM")) await dbInsert("SFM");
             else if(newVoiceState.selfMute == false && oldVoiceState.selfMute == true) await dbDelete("SFM");
             // Changement statut self deafen
-            if(newVoiceState.selfDeaf == true && oldVoiceState.selfDeaf == false) await dbInsert("SFD");
+            if(newVoiceState.selfDeaf == true && oldVoiceState.selfDeaf == false && !await checkActiveEvent("SFD")) await dbInsert("SFD");
             else if(newVoiceState.selfDeaf == false && oldVoiceState.selfDeaf == true) await dbDelete("SFD");
             // Changement statut server mute
-            if(newVoiceState.serverMute == true && oldVoiceState.serverMute == false) await dbInsert("SRM");
+            if(newVoiceState.serverMute == true && oldVoiceState.serverMute == false && !await checkActiveEvent("SRM")) await dbInsert("SRM");
             else if(newVoiceState.serverMute == false && oldVoiceState.serverMute == true) await dbDelete("SRM");
             // Changement statut server deafen
-            if(newVoiceState.serverDeaf == true && oldVoiceState.serverDeaf == false) await dbInsert("SRD");
+            if(newVoiceState.serverDeaf == true && oldVoiceState.serverDeaf == false && !await checkActiveEvent("SRD")) await dbInsert("SRD");
             else if(newVoiceState.serverDeaf == false && oldVoiceState.serverDeaf == true) await dbDelete("SRD");
             // changement statut streaming
-            if(newVoiceState.streaming == true && oldVoiceState.streaming == false) await dbInsert("STR");
+            if(newVoiceState.streaming == true && oldVoiceState.streaming == false && !await checkActiveEvent("STR")) await dbInsert("STR");
             else if(newVoiceState.streaming == false && oldVoiceState.streaming == true) await dbDelete("STR");
             // Changement statut caméra
-            if(newVoiceState.selfVideo == true && oldVoiceState.selfVideo == false) await dbInsert("CAM");
+            if(newVoiceState.selfVideo == true && oldVoiceState.selfVideo == false && !await checkActiveEvent("CAM")) await dbInsert("CAM");
             else if(newVoiceState.selfVideo == false && oldVoiceState.selfVideo == true) await dbDelete("CAM");
         }
 
@@ -109,6 +107,21 @@ export const event = {
             `, [
                 newVoiceState.id
             ]);
+        }
+
+        async function checkActiveEvent(eventType) {
+            const isActive = await db.getval(`
+                SELECT 1
+                FROM user_voice_event
+                WHERE event_type_id = ?
+                AND user_id = ?
+                and event_end_tms IS NULL
+            `, [
+                eventType,
+                newVoiceState.id
+            ]);
+
+            return (isActive) ? true : false;
         }
 
     }
