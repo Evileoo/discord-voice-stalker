@@ -36,8 +36,6 @@ export const event = {
 
 		} else if (interaction.isStringSelectMenu()) {
 
-			console.log(interaction);
-
 			const selectMenuData = interaction.customId.split(globals.separator);
 
 			const selectMenu = interaction.client.selectMenus.get(selectMenuData[0]);
