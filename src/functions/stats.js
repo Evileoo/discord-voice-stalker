@@ -19,7 +19,7 @@ export const stats = {
             , channel_name
             , event_type_id
             , DATE_FORMAT(event_start_tms, '%d/%m/%Y %H:%i:%s') AS "event_start_tms"
-            , COALESCE(DATE_FORMAT(event_end_tms, '%d/%m/%Y %H:%i:%s'), DATE_FORMAT(CURRENT_TIMESTAMP(), '%d/%m/%Y %H:%i:%s')) AS "event_end_tms" 
+            , COALESCE(DATE_FORMAT(event_end_tms, '%d/%m/%Y %H:%i:%s'), DATE_FORMAT(?, '%d/%m/%Y %H:%i:%s')) AS "event_end_tms" 
             FROM user_voice_event 
             WHERE 1=1 
         `;
@@ -31,7 +31,11 @@ export const stats = {
         if(params.periodeStart) query += `AND event_start_tms >= STR_TO_DATE('${params.periodeStart}', '%d/%m/%Y') `;
         if(params.periodeEnd) query += `AND event_end_tms <= STR_TO_DATE('${params.periodeEnd}', '%d/%m/%Y') `;
     
-        return await db.query(query);
+        return await db.query(`
+            ${query}
+        `, [
+            new Date()
+        ]);
     
     },
     async dataTreatment(params, data) {

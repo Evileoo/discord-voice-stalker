@@ -70,23 +70,25 @@ export const event = {
         async function dbInsert(eventType) {
             await db.query(`
                 INSERT INTO user_voice_event (user_id, user_name, channel_id, channel_name, event_type_id, event_start_tms)
-                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP())
+                VALUES (?, ?, ?, ?, ?, ?)
             `, [
                 newVoiceState.id,
                 newVoiceState.guild.members.cache.get(newVoiceState.id).user.username,
                 newVoiceState.channelId,
                 newVoiceState.guild.channels.cache.get(newVoiceState.channelId).name,
-                eventType
+                eventType,
+                new Date()
             ]);
         }
 
         async function dbDelete(eventType) {
             await db.query(`
                 UPDATE user_voice_event
-                SET event_end_tms = CURRENT_TIMESTAMP()
+                SET event_end_tms = ?
                 WHERE user_id = ?
                 AND event_type_id = ?
             `, [
+                new Date(),
                 newVoiceState.id,
                 eventType
             ]);
@@ -95,7 +97,7 @@ export const event = {
         async function dbDeleteAll() {
             await db.query(`
                 UPDATE user_voice_event
-                SET event_end_tms = CURRENT_TIMESTAMP()
+                SET event_end_tms = ?
                 WHERE event_id IN (
                     SELECT * FROM (
                         SELECT e.event_id
@@ -105,6 +107,7 @@ export const event = {
                     ) AS X
                 )
             `, [
+                new Date(),
                 newVoiceState.id
             ]);
         }
