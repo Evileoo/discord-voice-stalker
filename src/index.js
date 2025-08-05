@@ -4,7 +4,7 @@ import fs from 'fs';
 import { deploy } from './deploy-commands.js';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '../.env' });
+dotenv.config();
 
 // Create client instance
 const client = new Client({
