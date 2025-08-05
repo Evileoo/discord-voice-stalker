@@ -9,7 +9,10 @@ export const event = {
         // Bot is ready message
         console.log(`Ready! Logged in as ${client.user.tag}`);
 
-        client.user.setActivity("QUOI? FEUR");
+        client.user.setActivity("Compte le temps passé mute de Toto");
         client.user.setStatus("online");
+
+        // Le bot a été relancé, on ferme tous les events
+        await db.query(`UPDATE user_voice_event SET event_end_tms = CURRENT_TIMESTAMP() WHERE event_end_tms IS NULL`);
     }
 }
