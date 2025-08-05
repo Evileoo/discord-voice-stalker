@@ -22,7 +22,6 @@ export const selectMenu = {
 
         tab.forEach(element => {
             const id = element.split("<");
-            console.log("id: ", id);
             if(id.length > 1) {
                 const type = id[1].charAt(0);
 
@@ -49,8 +48,6 @@ export const selectMenu = {
                 }
             }
         });
-
-        console.log(command);
 
         // Exécution de la requête
         const rawData = await stats.query(command);
