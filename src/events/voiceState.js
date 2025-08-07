@@ -7,6 +7,8 @@ export const event = {
     once: false,
     async execute(oldVoiceState, newVoiceState){
 
+        const date = new Date();
+
         ///////////////////////////////
         // traitement des évènements //
         ///////////////////////////////
@@ -77,7 +79,7 @@ export const event = {
                 newVoiceState.channelId,
                 newVoiceState.guild.channels.cache.get(newVoiceState.channelId).name,
                 eventType,
-                new Date()
+                date
             ]);
         }
 
@@ -87,8 +89,9 @@ export const event = {
                 SET event_end_tms = ?
                 WHERE user_id = ?
                 AND event_type_id = ?
+                AND event_end_tms IS NULL
             `, [
-                new Date(),
+                date,
                 newVoiceState.id,
                 eventType
             ]);
@@ -107,7 +110,7 @@ export const event = {
                     ) AS X
                 )
             `, [
-                new Date(),
+                date,
                 newVoiceState.id
             ]);
         }
