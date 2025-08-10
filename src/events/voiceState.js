@@ -7,12 +7,6 @@ export const event = {
     once: false,
     async execute(oldVoiceState, newVoiceState){
 
-        const date = new Date();
-
-        const date2 = await db.query(`select now() from dual`);
-
-        console.log(date2);
-
         ///////////////////////////////
         // traitement des évènements //
         ///////////////////////////////
