@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS user_voice_event (
     channel_id          VARCHAR(50) NOT NULL                COMMENT "Identifiant du channel discord dans lequel l'event s'est déclenché",
     channel_name        VARCHAR(50) NOT NULL                COMMENT "Nom du channel (au cas où il est supprimé)",
     event_type_id       CHAR(3)     NOT NULL                COMMENT "Type d'évènement",
-    event_start_tms     TIMESTAMP   NOT NULL                COMMENT "Timestamp du début de l'évènement",
-    event_end_tms       TIMESTAMP       NULL                COMMENT "Timestamp de la fin de l'évènement",
+    event_start_dt      DATETIME    NOT NULL                COMMENT "Timestamp du début de l'évènement",
+    event_end_dt        DATETIME        NULL                COMMENT "Timestamp de la fin de l'évènement",
     PRIMARY KEY (event_id),
     FOREIGN KEY (event_type_id) REFERENCES event_type(event_type_id)
 ) ENGINE=INNODB COMMENT="Évènements gérés";
@@ -45,14 +45,3 @@ INSERT INTO event_type (event_type_id, event_type_lib) VALUES
 ('VCL', 'Temps en vocal'),
 ('STR', 'Partage d''écran'),
 ('CAM', 'Caméra allumée');
-
-UPDATE user_voice_event
-SET event_end_tms = CURRENT_TIMESTAMP()
-WHERE event_id IN (
-    SELECT * FROM (
-        SELECT e.event_id
-        FROM user_voice_event e
-        WHERE user_id = ?
-        AND event_end_tms IS NULL
-    ) AS X
-)

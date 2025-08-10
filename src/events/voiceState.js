@@ -9,6 +9,10 @@ export const event = {
 
         const date = new Date();
 
+        const date2 = await db.query(`select now() from dual`);
+
+        console.log(date2);
+
         ///////////////////////////////
         // traitement des évènements //
         ///////////////////////////////
@@ -71,27 +75,25 @@ export const event = {
 
         async function dbInsert(eventType) {
             await db.query(`
-                INSERT INTO user_voice_event (user_id, user_name, channel_id, channel_name, event_type_id, event_start_tms)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO user_voice_event (user_id, user_name, channel_id, channel_name, event_type_id, event_start_dt)
+                VALUES (?, ?, ?, ?, ?, NOW())
             `, [
                 newVoiceState.id,
                 newVoiceState.guild.members.cache.get(newVoiceState.id).user.username,
                 newVoiceState.channelId,
                 newVoiceState.guild.channels.cache.get(newVoiceState.channelId).name,
-                eventType,
-                date
+                eventType
             ]);
         }
 
         async function dbDelete(eventType) {
             await db.query(`
                 UPDATE user_voice_event
-                SET event_end_tms = ?
+                SET event_end_dt = NOW()
                 WHERE user_id = ?
                 AND event_type_id = ?
-                AND event_end_tms IS NULL
+                AND event_end_dt IS NULL
             `, [
-                date,
                 newVoiceState.id,
                 eventType
             ]);
@@ -100,17 +102,16 @@ export const event = {
         async function dbDeleteAll() {
             await db.query(`
                 UPDATE user_voice_event
-                SET event_end_tms = ?
+                SET event_end_dt = NOW()
                 WHERE event_id IN (
                     SELECT * FROM (
                         SELECT e.event_id
                         FROM user_voice_event e
                         WHERE user_id = ?
-                        AND event_end_tms IS NULL
+                        AND event_end_dt IS NULL
                     ) AS X
                 )
             `, [
-                date,
                 newVoiceState.id
             ]);
         }
@@ -121,7 +122,7 @@ export const event = {
                 FROM user_voice_event
                 WHERE event_type_id = ?
                 AND user_id = ?
-                and event_end_tms IS NULL
+                and event_end_dt IS NULL
             `, [
                 eventType,
                 newVoiceState.id

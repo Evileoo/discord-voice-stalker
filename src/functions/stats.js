@@ -18,8 +18,8 @@ export const stats = {
             , channel_id
             , channel_name
             , event_type_id
-            , DATE_FORMAT(event_start_tms, '%d/%m/%Y %H:%i:%s') AS "event_start_tms"
-            , COALESCE(DATE_FORMAT(event_end_tms, '%d/%m/%Y %H:%i:%s'), DATE_FORMAT(?, '%d/%m/%Y %H:%i:%s')) AS "event_end_tms" 
+            , DATE_FORMAT(event_start_dt, '%d/%m/%Y %H:%i:%s') AS "event_start_dt"
+            , COALESCE(DATE_FORMAT(event_end_dt, '%d/%m/%Y %H:%i:%s'), DATE_FORMAT(?, '%d/%m/%Y %H:%i:%s')) AS "event_end_dt" 
             FROM user_voice_event 
             WHERE 1=1 
         `;
@@ -28,8 +28,8 @@ export const stats = {
         if(params.memberId && params.memberCompareId) query += `AND user_id IN ('${params.memberId}', '${params.memberCompareId}') `;
         else if(params.memberId) query += `AND user_id='${params.memberId}' `;
         if(params.channelId) query += `AND channel_id='${params.channelId}' `;
-        if(params.periodeStart) query += `AND event_start_tms >= STR_TO_DATE('${params.periodeStart}', '%d/%m/%Y') `;
-        if(params.periodeEnd) query += `AND event_end_tms <= STR_TO_DATE('${params.periodeEnd}', '%d/%m/%Y') `;
+        if(params.periodeStart) query += `AND event_start_dt >= STR_TO_DATE('${params.periodeStart}', '%d/%m/%Y') `;
+        if(params.periodeEnd) query += `AND event_end_dt <= STR_TO_DATE('${params.periodeEnd}', '%d/%m/%Y') `;
     
         return await db.query(`
             ${query}
@@ -54,28 +54,28 @@ export const stats = {
                         found = true;
                         switch(element.event_type_id) {
                             case "CAM":
-                                statsTab[i].data.cam += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.cam += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                             case "SFD":
-                                statsTab[i].data.sfd += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.sfd += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                             case "SFM":
-                                statsTab[i].data.sfm += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.sfm += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                             case "SRD":
-                                statsTab[i].data.srd += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.srd += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                             case "SRM":
-                                statsTab[i].data.srm += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.srm += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                             case "STR":
-                                statsTab[i].data.str += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.str += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                             case "VCL":
-                                statsTab[i].data.vcl += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.vcl += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                             case "AFK":
-                                statsTab[i].data.afk += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                                statsTab[i].data.afk += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                         }
 
@@ -88,14 +88,14 @@ export const stats = {
                         userId: element.user_id,
                         member: element.user_id == params.memberId,
                         data: {
-                            cam: (element.event_type_id == "CAM") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
-                            sfd: (element.event_type_id == "SFD") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
-                            sfm: (element.event_type_id == "SFM") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
-                            srd: (element.event_type_id == "SRD") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
-                            srm: (element.event_type_id == "SRM") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
-                            str: (element.event_type_id == "STR") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
-                            vcl: (element.event_type_id == "VCL") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0,
-                            afk: (element.event_type_id == "AFK") ? manageDates.calculPeriode(element.event_start_tms, element.event_end_tms) : 0
+                            cam: (element.event_type_id == "CAM") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0,
+                            sfd: (element.event_type_id == "SFD") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0,
+                            sfm: (element.event_type_id == "SFM") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0,
+                            srd: (element.event_type_id == "SRD") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0,
+                            srm: (element.event_type_id == "SRM") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0,
+                            str: (element.event_type_id == "STR") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0,
+                            vcl: (element.event_type_id == "VCL") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0,
+                            afk: (element.event_type_id == "AFK") ? manageDates.calculPeriode(element.event_start_dt, element.event_end_dt) : 0
                         }
                     })
                 }
@@ -113,12 +113,12 @@ export const stats = {
                     for(let i = 0; i < userTab.length; i++) {
                         if(userTab[i].userId == element.user_id) {
                             found = true;
-                            userTab[i].totalTime += manageDates.calculPeriode(element.event_start_tms, element.event_end_tms);
+                            userTab[i].totalTime += manageDates.calculPeriode(element.event_start_dt, element.event_end_dt);
                             break;
                         }
                     }
                     if(!found) {
-                        userTab.push({userId: `${element.user_id}`, totalTime: manageDates.calculPeriode(element.event_start_tms, element.event_end_tms)});
+                        userTab.push({userId: `${element.user_id}`, totalTime: manageDates.calculPeriode(element.event_start_dt, element.event_end_dt)});
                     }
                 }
             });

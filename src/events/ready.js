@@ -15,8 +15,8 @@ export const event = {
         // Le bot a été relancé, on ferme tous les events
         await db.query(`
             UPDATE user_voice_event 
-            SET event_end_tms = ?
-            WHERE event_end_tms IS NULL
+            SET event_end_dt = ?
+            WHERE event_end_dt IS NULL
         `, [
             new Date()
         ]);
